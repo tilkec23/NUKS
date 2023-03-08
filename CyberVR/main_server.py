@@ -3,6 +3,7 @@ import sqlite3
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from secrets import auth_key
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +18,7 @@ limiter = Limiter(
 def query():
     # Only allow requests from authorized client with valid secret key.
     auth_header = request.headers.get('Authorization')
-    if not auth_header or auth_header != 'VQs8e7mHBuWozlPug0Z08ZfNbwm3LMyb':
+    if not auth_header or auth_header != auth_key:
         return jsonify({'message': 'Unauthorized'}), 401
     else:
         data = request.get_json()
