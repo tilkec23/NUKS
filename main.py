@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from database import engine, Base, ToDo
 import shemas
 from typing import Union
@@ -17,28 +17,54 @@ async def add_todo(todo: shemas.ToDo):
     """API call for adding a TODO item"""
     session = Session(engine, expire_on_commit=False)
     new_todo = ToDo(task=todo.task)
+    print(new_todo)
     session.add(new_todo)
     session.commit()
     id = new_todo.id
     session.close()
     return f"Created new TODO item with id {id}"
 
-@app.get("/delete/{id}")
+
+@app.delete("/delete/{id}")
 async def delete_todo(id: int):
     """API call for deleting a TODO item"""
-    return {"message": "Delete TODO"}
+    session = Session(engine, expire_on_commit=False)
+    if not session.query(ToDo).filter(ToDo.id == id).first():
+        raise HTTPException(status_code=404, detail="TODO item not found")
+    todo = session.query(ToDo).filter(ToDo.id == id).first()
+    session.delete(todo)
+    session.commit()
+    id = todo.id
+    session.close()
+    return f"Deleted TODO item with id {id}"
 
-@app.get("/update/{id}")
-async def update_todo(id: int):
+@app.put("/update/{id}")
+async def update_todo(id: int, todo: shemas.ToDo):
     """API call for updating a TODO item"""
-    return {"message": "Update TODO"}
+    session = Session(engine, expire_on_commit=False)
+    if not session.query(ToDo).filter(ToDo.id == id).first():
+        raise HTTPException(status_code=404, detail="TODO item not found")
+    existing_todo = session.query(ToDo).filter(ToDo.id == id).first()
+    existing_todo.task = todo.task
+    session.commit()
+    id = existing_todo.id
+    session.close()
+    return f"Updated TODO item with id {id} with content {todo.task}"
 
 @app.get("/get/{id}")
 async def get_todo(id: int):
     """API call for getting a TODO item"""
-    return {"message": "Get TODO"}
+    session = Session(engine, expire_on_commit=False)
+    if not session.query(ToDo).filter(ToDo.id == id).first():
+        raise HTTPException(status_code=404, detail="TODO item not found")
+    todo = session.query(ToDo).filter(ToDo.id == id).first()
+    session.close()
+    return f"The TODO item with the ID:{id} is {todo.task}"
 
 @app.get("/list")
 async def list_todo():
     """API call for listing all TODO items"""
-    return {"message": "List TODO"}
+    session = Session(engine, expire_on_commit=False)
+    todos = session.query(ToDo).all()
+    session.close()
+    return f"The TODO items are {todos}"
