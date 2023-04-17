@@ -1,0 +1,13 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: localhost:8080
+functions:
+  images-count:
+    lang: python
+    handler: .
+    image: python_3_9_pymongo
+    environment:
+      mongodb_uri: mongodb://localhost:27017/
+      mongodb_database: myimagedatabase
+      mongodb_collection: images
