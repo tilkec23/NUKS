@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css">
+    <title>RMS ImgurClone</title>
+</head>
+<body>
+    <h1>NUKS type beat</h1>
+        <!-- Add a button to upload an image -->
+        <form>
+          <label for="file-input">Select a file:</label>
+          <input type="file" id="file-input" name="file"><br><br>
+          <label for="title-input">Title:</label>
+          <input type="text" id="title-input" name="title"><br><br>
+          <button type="button" id="upload-btn">Upload</button>
+        </form>
+        
+
+
+    <div class="gallery" id="gallery">
+        
+    </div>
+
+
+    
+    <script>
+    
+      let gallery2 = document.getElementById("gallery");
+
+      // Define a function to fetch the highest image ID from the server
+      async function getHighestImageId() {
+        const response = await fetch("http://212.101.137.122:8000/highest_image_id/");
+        const data = await response.json();
+        return data.highest_id;
+      }
+
+      // Define a function to fetch an image by ID from the server
+      async function getImageById(id) {
+        const response = await fetch(`http://212.101.137.122:8000/images/${id}`);
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+      }
+
+      // Define a function to create an image element and add it to the gallery
+      function addImageToGallery(url) {
+        const galleryItem = document.createElement("div");
+        galleryItem.classList.add("gallery-item");
+
+        const content = document.createElement("div");
+        content.classList.add("content");
+
+        const img = document.createElement("img");
+        img.src = url;
+
+        content.appendChild(img);
+        galleryItem.appendChild(content);
+        gallery2.appendChild(galleryItem);
+      }
+
+      // Define an async function to load the latest images from the server
+      async function loadLatestImages() {
+        const highestId = await getHighestImageId();
+
+        for (let id = highestId; id >= 1 && id > highestId - 5; id--) {
+          const url = await getImageById(id);
+          addImageToGallery(url);
+        }
+      }
+
+      // Call the loadLatestImages function to load the latest images on page load
+      loadLatestImages();
+
+      
+
+
+
+      
+
+      const uploadBtn = document.getElementById("upload-btn");
+
+      uploadBtn.addEventListener("click", async () => {
+const titleInput = document.getElementById("title-input");
+const fileInput = document.getElementById("file-input");
+
+const formData = new FormData();
+formData.append("title", titleInput.value);
+formData.append("file", fileInput.files[0]);
+
+const title = titleInput.value;
+
+const response = await fetch(`http://212.101.137.122:8000/uploadfile/?title=${encodeURIComponent(title)}`, {
+method: "POST",
+body: formData,
+});
+
+const data = await response.json();
+console.log(data);
+});
+
+
+    </script>
+
+
+
+
+     <script>
+      var gallery = document.querySelector('#gallery');
+      var getVal = function (elem, style) { return parseInt(window.getComputedStyle(elem).getPropertyValue(style)); };
+      var getHeight = function (item) { return item.querySelector('.content').getBoundingClientRect().height; };
+      var resizeAll = function () {
+          var altura = getVal(gallery, 'grid-auto-rows');
+          var gap = getVal(gallery, 'grid-row-gap');
+          gallery.querySelectorAll('.gallery-item').forEach(function (item) {
+              var el = item;
+              el.style.gridRowEnd = "span " + Math.ceil((getHeight(item) + gap) / (altura + gap));
+          });
+      };
+      gallery.querySelectorAll('img').forEach(function (item) {
+          item.classList.add('byebye');
+          if (item.complete) {
+              console.log(item.src);
+          }
+          else {
+              item.addEventListener('load', function () {
+                  var altura = getVal(gallery, 'grid-auto-rows');
+                  var gap = getVal(gallery, 'grid-row-gap');
+                  var gitem = item.parentElement.parentElement;
+                  gitem.style.gridRowEnd = "span " + Math.ceil((getHeight(gitem) + gap) / (altura + gap));
+                  item.classList.remove('byebye');
+              });
+          }
+      });
+      window.addEventListener('resize', resizeAll);
+      gallery.querySelectorAll('.gallery-item').forEach(function (item) {
+          item.addEventListener('click', function () {        
+              item.classList.toggle('full');        
+          });
+      });
+
+     </script>
+</body>
+</html>

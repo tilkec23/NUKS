@@ -1,0 +1,29 @@
+version: '3'
+services:
+  frontend:
+    image: tilkec23/frontend2
+    ports:
+      - "80:80"
+    networks:
+      my-network:
+  fastapi:
+    image: tilkec23/fastapi2
+    ports:
+      - "8000:8000"
+    networks:
+      my-network:
+  mongodb:
+    image: mongo:4.4.6
+    container_name: my-mongodb-container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      my-network:
+
+volumes:
+  mongodb-data:
+
+networks:
+  my-network:
